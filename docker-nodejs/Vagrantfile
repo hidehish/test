@@ -1,0 +1,27 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# vbguest plugin https://github.com/dotless-de/vagrant-vbguest
+
+VAGRANTFILE_API_VERSION = "2"
+
+FORWARD_DOCKER_PORTS = 1
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = "precise64"
+  config.vm.box_url = "http://files.vagrantup.com/precise64.box"
+  config.vm.provision :docker
+  config.vm.provision :shell, :path => 'bootstrap.sh'
+
+  # docker remote api port
+  config.vm.network :forwarded_port, :host => 44243, :guest => 4243, auto_correct: true
+
+  # https://github.com/dotcloud/docker/blob/master/Vagrantfile#L192
+  forward_ports = FORWARD_DOCKER_PORTS.nil? ? [] : [*49153..49900]
+  if forward_ports.any?
+    forward_ports.each do |port|
+      config.vm.network :forwarded_port, :host => port, :guest => port, auto_correct: true
+    end
+  end
+
+end
